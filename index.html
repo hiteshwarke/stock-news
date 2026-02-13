@@ -1,30 +1,17 @@
-
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>Stock News Auto Bot</title>
+  <title>Stock News Auto</title>
   <style>
-    body { font-family: Arial; padding: 20px; background: #f5f5f5; }
-    h2 { color: #333; }
-    .card {
-      background: #fff;
-      border-radius: 8px;
-      padding: 15px;
-      margin-bottom: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    a {
-      font-weight: bold;
-      text-decoration: none;
-      color: #007bff;
-    }
-    small { color: gray; }
+    body { font-family: sans-serif; padding: 20px; }
+    .card { margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
+    a { text-decoration: none; color: #007bff; }
   </style>
 </head>
 <body>
 
-<h2>📈 Latest Order / Contract News</h2>
+<h2>📈 BSE Stock Announcements</h2>
 <div id="news"></div>
 
 <script>
@@ -32,25 +19,18 @@ fetch("news.json")
   .then(res => res.json())
   .then(data => {
     const container = document.getElementById("news");
-
-    if (!data || data.length === 0) {
-      container.innerHTML = "<p>No news found.</p>";
+    if (!data.length) {
+      container.innerHTML = "<p>No news yet.</p>";
       return;
     }
-
     data.forEach(item => {
-      const div = document.createElement("div");
-      div.className = "card";
-      div.innerHTML = `
-        <a href="${item.link}" target="_blank">${item.title}</a>
-        <br>
-        <small>${item.pubDate}</small>
+      container.innerHTML += `
+        <div class="card">
+          <a href="${item.link}" target="_blank">${item.title}</a>
+          <br/><small>${item.date}</small>
+        </div>
       `;
-      container.appendChild(div);
     });
-  })
-  .catch(() => {
-    document.getElementById("news").innerHTML = "Error loading news.";
   });
 </script>
 
