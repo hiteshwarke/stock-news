@@ -1,33 +1,57 @@
 const fs = require("fs");
-const Parser = require("rss-parser");
-
-const parser = new Parser();
+const puppeteer = require("puppeteer");
 
 async function fetchNews() {
-  try {
-    console.log("Fetching news...");
+  console.log("Starting scrape...");
 
-    const feed = await parser.parseURL(
-      "https://www.moneycontrol.com/rss/latestnews.xml"
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"]
+  });
+
+  const page = await browser.newPage();
+
+  await page.goto("https://www.bseindia.com/corporates/ann.html", {
+    waitUntil: "networkidle2"
+  });
+
+  const news = await page.evaluate(() => {
+    const rows = Array.from(
+      document.querySelectorAll("#ContentPlaceHolder1_gvData tr")
     );
 
-    const keywords = /order|contract|wins|award|expansion|deal/i;
+    let items = [];
 
-    const filteredNews = feed.items
-      .filter(item => keywords.test(item.title))
-      .slice(0, 15)
-      .map(item => ({
-        title: item.title,
-        link: item.link,
-        pubDate: item.pubDate
-      }));
+    rows.forEach(row => {
+      const cells = row.querySelectorAll("td");
 
-    fs.writeFileSync("news.json", JSON.stringify(filteredNews, null, 2));
+      if (cells.length === 7) {
+        const date = cells[1].innerText.trim();
+        const title = cells[2].innerText.trim();
+        const linkEl = cells[3].querySelector("a");
+        let link = "";
 
-    console.log("News updated successfully ✅");
-  } catch (error) {
-    console.error("Error fetching news:", error);
-  }
+        if (linkEl) {
+          link = linkEl.href;
+        }
+
+        items.push({ date, title, link });
+      }
+    });
+
+    return items;
+  });
+
+  await browser.close();
+
+  // Filter by keyword
+  const filtered = news.filter(item =>
+    /order|contract|wins|award|expansion|deal/i.test(item.title)
+  );
+
+  fs.writeFileSync("news.json", JSON.stringify(filtered, null, 2));
+
+  console.log("Scraping done, saved news.json");
 }
 
 fetchNews();
