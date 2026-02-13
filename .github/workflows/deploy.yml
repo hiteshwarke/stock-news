@@ -2,7 +2,7 @@ name: Auto Deploy Stock News
 
 on:
   schedule:
-    - cron: "*/30 * * * *"  # Every 30 mins
+    - cron: "*/3 * * * *"  # Every 30 mins
   workflow_dispatch:
 
 permissions:
