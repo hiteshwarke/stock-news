@@ -1,11 +1,10 @@
 {
   "name": "stock-news",
   "version": "1.0.0",
-  "description": "Auto Stock News Fetcher",
   "scripts": {
     "fetch": "node fetchNews.js"
   },
   "dependencies": {
-    "rss-parser": "^3.12.0"
+    "puppeteer": "^21.4.0"
   }
 }
