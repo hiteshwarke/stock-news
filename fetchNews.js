@@ -1,36 +1,32 @@
-# (NSE RSS Fetch + Filter)
-const axios = require("axios");
-const xml2js = require("xml2js");
 const fs = require("fs");
+const Parser = require("rss-parser");
 
-const RSS_URL = "https://www.nseindia.com/rss/corporate-announcements.xml";
+const parser = new Parser();
 
 async function fetchNews() {
   try {
-    const response = await axios.get(RSS_URL, {
-      headers: { "User-Agent": "Mozilla/5.0" }
-    });
+    console.log("Fetching news...");
 
-    const parser = new xml2js.Parser();
-    const result = await parser.parseStringPromise(response.data);
+    const feed = await parser.parseURL(
+      "https://www.moneycontrol.com/rss/latestnews.xml"
+    );
 
-    const items = result.rss.channel[0].item;
+    const keywords = /order|contract|wins|award|expansion|deal/i;
 
-    const filtered = items
-      .filter(item =>
-        item.title[0].match(/Order|Contract|Award|Expansion/i)
-      )
+    const filteredNews = feed.items
+      .filter(item => keywords.test(item.title))
       .slice(0, 15)
       .map(item => ({
-        title: item.title[0],
-        link: item.link[0],
-        date: item.pubDate[0]
+        title: item.title,
+        link: item.link,
+        pubDate: item.pubDate
       }));
 
-    fs.writeFileSync("news.json", JSON.stringify(filtered, null, 2));
+    fs.writeFileSync("news.json", JSON.stringify(filteredNews, null, 2));
+
     console.log("News updated successfully ✅");
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching news:", error);
   }
 }
 
